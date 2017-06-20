@@ -23,20 +23,6 @@ def message():
     bufsize = 1024
     addr = (host, addr)
 
-    tcpCliSock = socket(AF_INET, SOCK_STREAM)
-    tcpCliSock.connect(addr)
-
-    def recv():
-        while True:
-            data = tcpCliSock.recv(bufsize)
-            if not data: sys.exit(0)
-            print(data)
-    Thread(target=recv).start()
-    while True:
-        data = input("> ")
-        if not data: break
-        tcpCliSock.send(data)
-    tcpCliSock.close()
 
 def about():
     os.system("cls" if os.name == "nt" else "clear")
