@@ -1,0 +1,8 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "command": "C:\\Program Files\\Git\\git-bash.exe",
+    "args": ["-c 'cd C:/Users/HP/Desktop/Netco; python Netco.py; sleep 60'"],
+    "showOutput": "always"
+}
