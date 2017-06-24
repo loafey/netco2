@@ -1,28 +1,90 @@
-from Crypto.PublicKey import RSA
-from Crypto.Random import get_random_bytes
-from Crypto.Cipher import AES, PKCS1_OAEP
-from io import BufferedReader
-from socket import *
-from threading import Thread
-import os.path
-import getpass
-import time
-import sys
-import io
-import secrets
-import string
-import clipboard
-from random import choice
-from pyfiglet import Figlet
-_version = "0.2"
+try:
+    import getpass
+    import hashlib
+    import io
+    import os.path
+    import secrets
+    import string
+    import sys
+    import time
+    from io import BufferedReader
+    from random import choice
+    from socket import *
+    from threading import Thread
+
+    import clipboard
+    from Crypto.Cipher import AES, PKCS1_OAEP
+    from Crypto.PublicKey import RSA
+    from Crypto.Random import get_random_bytes
+    from pyfiglet import Figlet
+except ModuleNotFoundError:
+    print("Library missing! Please run pip install -r requirements.txt")
+    exit()
+
+_version = "0.4"
 _name = "Netco"
 
-def message():
-    host = "localhost"
-    port = 8080
-    bufsize = 1024
-    addr = (host, addr)
+def md5hash(file):
+    hasher = hashlib.md5()
+    with open(file, "rb") as afile:
+        buf = afile.read()
+        hasher.update(buf)
+    return hasher.hexdigest()
 
+def sha1hash(file):
+    hasher = hashlib.sha1()
+    with open(file, "rb") as afile:
+        buf = afile.read()
+        hasher.update(buf)
+    return hasher.hexdigest()
+
+def sha256hash(file):
+    hasher = hashlib.sha256()
+    with open(file, "rb") as afile:
+        buf = afile.read()
+        hasher.update(buf)
+    return hasher.hexdigest()
+
+def sha512hash(file):
+    hasher = hashlib.sha512()
+    with open(file, "rb") as afile:
+        buf = afile.read()
+        hasher.update(buf)
+    return hasher.hexdigest()
+
+def message():
+    if os.path.isfile("Encrypted/message.txt"):
+        os.remove("Encrypted/message.txt")
+
+    os.system("cls" if os.name == "nt" else "clear")
+    print(title__.renderText(_name))
+    print("Encrypt text")
+    print("")
+    print("""Type the message you want to encrypt. Type --Done-- to be finished. You can't reverse writen lines!""")
+    encrypt_out = "message"#input("Enter name of the encrypted text file: ")
+    encrypt_out_file = open("Encrypted/message.txt","a")
+    while True:
+        text = input("> ")
+        encrypt_out_file.write(text+"\n")
+        if text == "--Done--":
+            encrypt_out_file.close()
+            encrypt_text = open("Encrypted/message.txt","rb").read()
+            encrypt_text_out = open("Encrypted/message.txt.bin","wb")
+            print("Input name of the recipent. End the name with '.public'!")
+            recipient_key_file = input("> ")
+
+            recipient_key = RSA.import_key(open("Public Keys/"+recipient_key_file).read())
+            session_key = get_random_bytes(16)
+
+            cipher_rsa = PKCS1_OAEP.new(recipient_key)
+            encrypt_text_out.write(cipher_rsa.encrypt(session_key))
+
+            cipher_aes = AES.new(session_key, AES.MODE_EAX)
+            ciphertext, tag = cipher_aes.encrypt_and_digest(encrypt_text)
+            [encrypt_text_out.write(x) for x in (cipher_aes.nonce, tag, ciphertext)]
+            encrypt_text_out.close()
+            os.remove("Encrypted/message.txt")
+            break
 
 def about():
     os.system("cls" if os.name == "nt" else "clear")
@@ -43,7 +105,8 @@ def generate_password():
     print(title__.renderText(_name))
     print("Generate a password")
     print("")
-    plength = (input("Please choose a password length: "))
+    print("Please choose a password length.")
+    plength = (input("> "))
     alphabet = string.ascii_letters+string.digits+string.punctuation
     if check_float(plength) == True:
         try:
@@ -52,7 +115,8 @@ def generate_password():
             print("")
             print(password)
             print("")
-            copy_quest = input("Do you want to copy the password to the clipboard(y)?: ")
+            print("Do you want to copy the password to the clipboard(y)?: ")
+            copy_quest = input("> ")
             if copy_quest == "y":
                 clipboard.copy(password)
             else:
@@ -67,42 +131,62 @@ def start_menu():
     print("")
     print("Type the corresponding number to do the corresponding action.")
     print("1. Login")
-    print(" 2. What is this software?")
-    print("  3. Generate a password")
-    print("   4. Exit")
+    print(" 2. New key")
+    print("  3. What is this software?")
+    print("   4. Generate a password")
+    print("    5. Exit")
     option = input("Select item: ")
     if check_float(option) == True:
         if option == "1":
             print("-----------------------------------")
             login()
         if option == "2":
-            about()
+            newkey()
         if option == "3":
-            generate_password()
+            about()
         if option == "4":
+            generate_password()
+        if option == "5":
             quit()
         else:
             start_menu()
+    else:
+        start_menu()
 
 
 def newkey():
+    if os.path.isdir("Keys") == False:
+        os.mkdir("Keys")
+    if os.path.isdir("Public Keys") == False:
+        os.mkdir("Public Keys")
+    print("")
     print("We will now generate a key!")
     print("It is very important that you don't share your passphrase! For extra security your private key should also never be shared! In doing so may result in loss of privacy and personal information!")
     time.sleep(1)
     global secret_code
-    secret_code = getpass.getpass("Enter a passphrase: ")
+    print("Enter a usernam")
+    user_name = input("> ")
+    print("Enter password")
+    secret_code = getpass.getpass("> ")
     print("Generating a key")
     global key
     global my_private
     global pkey
-    key = RSA.generate(4096)
-    my_private = key.exportKey(passphrase=secret_code, pkcs=8, protection="scryptAndAES128-CBC")
-    pkey = key.publickey().exportKey()
-    print("Key generated")
-    file_out = open("my_private.bin", "wb")
-    file_out.write(my_private)
-    open("my_public.pem","wb").write(key.publickey().exportKey())
-    file_out.close()
+    try:
+        key = RSA.generate(4096)
+        my_private = key.exportKey(passphrase=secret_code, pkcs=8, protection="scryptAndAES128-CBC")
+        pkey = key.publickey().exportKey()
+        file_out = open("Keys/"+user_name, "wb")
+        file_out.write(my_private)
+        open("Public Keys/"+user_name+".public","wb").write(key.publickey().exportKey())
+        file_out.close()
+        print("Key generated...")
+        time.sleep(3)
+        start_menu()
+    except:
+        print("Something went wrong!")
+        getpass.getpass("Press enter to return to main menu...")
+        start_menu()
 
 def check_float(option):
     try:
@@ -119,7 +203,7 @@ def menu():
     print("Type the corresponding number to do the corresponding action.")
     print("1. Encrypt file")
     print(" 2. Decrypt file")
-    print("  3. Send message")
+    print("  3. Encrypt text")
     print("   4. View publickey")
     print("    5. View privatekey")
     print("     6. Delete key and exit")
@@ -138,9 +222,14 @@ def menu():
         if option == "4":
             os.system("cls" if os.name == "nt" else "clear")
             print(title__.renderText(_name))
-            print("Public key")
+            print("Public key:")
             print("")
-            print(str(pkey))
+            print(str(pkey,"latin-1"))
+            print("")
+            print("md5: "+md5hash("Public Keys/"+user_name+".public"))
+            print("sha1: "+sha1hash("Public Keys/"+user_name+".public"))
+            print("sha256: "+sha256hash("Public Keys/"+user_name+".public"))
+            print("sha512: "+sha512hash("Public Keys/"+user_name+".public"))
             print("")
             getpass.getpass("Press enter to continue...")
             menu()
@@ -152,7 +241,12 @@ def menu():
             secret_code2=getpass.getpass("Password: ")
             print("")
             if secret_code2 == secret_code:
-                print((my_private))
+                print(str(my_private,"latin-1"))
+                print("")
+                print("md5: "+md5hash("Keys/"+user_name))
+                print("sha1: "+sha1hash("Keys/"+user_name))
+                print("sha256: "+sha256hash("Keys/"+user_name))
+                print("sha512: "+sha512hash("Keys/"+user_name))
                 print("")
                 getpass.getpass("Press enter to continue...")
                 menu()
@@ -168,10 +262,16 @@ def menu():
             print("")
             del_ = input("Are you sure?(y): ")
             if del_ == "y":
-                os.remove("my_private.bin")
-                os.remove("my_public.pem")
-                os.system("cls" if os.name == "nt" else "clear")
-                exit()
+                let = getpass.getpass("Enter password: ")
+                if let == secret_code:
+                    os.remove("Keys/"+user_name)
+                    os.remove("Keys/"+user_name+".public")
+                    os.system("cls" if os.name == "nt" else "clear")
+                    exit()
+                else:
+                    print("Wrong password!")
+                    time.sleep(5)
+                    menu()
             else:
                 menu()
 
@@ -181,35 +281,58 @@ def menu():
         else:
             print("enter something valid dumbhead")
             menu()
+    else:
+        menu()
 
 def login():
     global attempt
-    if os.path.isfile("my_private.bin") == False:
-        newkey()
-    else:
-        global secret_code
-        global pkey
-        secret_code = getpass.getpass("Enter passphrase: ")
-        #secret_code = input("Enter passphrase: ")
-        encoded_key = open("my_private.bin", "rb").read()
-        try:
-            global key
-            global my_private
+    if os.path.isdir("Keys") == False:
+        os.mkdir("Keys")
+    if os.path.isdir("Public Keys") == False:
+        os.mkdir("Public Keys")
+    
+    if os.path.isdir("Keys") == True:
+        for dir, sub_dirs, files in os.walk("Keys"):
+            if not files:
+                print("Seems you have no keys")
+                newkey()
+        else:
+            global secret_code
             global pkey
-            key = RSA.import_key(encoded_key, passphrase=secret_code)
-            my_private = key.exportKey(passphrase=secret_code, pkcs=8, protection="scryptAndAES128-CBC")
-            pkey = key.publickey().exportKey()
-            open("my_public.pem","wb").write(key.publickey().exportKey())
-            time.sleep(3)
-            menu()
-        except ValueError:
-            attempt = attempt+1
-            print("Wrong password probably!")
-            print("Attempts: "+str(attempt))
-            time.sleep(0.3)
-            print("")
-            login()
-            
+            global user_name
+            print("Enter username.")
+            user_name = input("> ")
+            print("Enter password.")
+            secret_code = getpass.getpass("> ")
+            #secret_code = input("Enter passphrase: ")
+            try:
+                encoded_key = open("Keys/"+user_name, "rb").read()
+            except:
+                attempt = attempt+1
+                print("User doesn't exist probably!")
+                print("Attempts: "+str(attempt))
+                time.sleep(0.3)
+                print("")
+                login()
+
+            try:
+                global key
+                global my_private
+                global pkey
+                key = RSA.import_key(encoded_key, passphrase=secret_code)
+                my_private = key.exportKey(passphrase=secret_code, pkcs=8, protection="scryptAndAES128-CBC")
+                pkey = key.publickey().exportKey()
+                #open("my_public.pem","wb").write(key.publickey().exportKey())
+                time.sleep(3)
+                menu()
+            except ValueError:
+                attempt = attempt+1
+                print("Wrong password probably!")
+                print("Attempts: "+str(attempt))
+                time.sleep(0.3)
+                print("")
+                login()
+
 
 def encrypt_file():
     os.system("cls" if os.name == "nt" else "clear")
@@ -218,27 +341,30 @@ def encrypt_file():
     print(title__.renderText(_name))
     print("Encrypt file")
     print("")
-    encrypt_file = input("Enter name of the file you want to encrypt: ")
-    encrypt_file_2 = (open(encrypt_file,"rb").read())
-    encrypt_name = encrypt_file+".bin"
-    encrypt_out = open("Encrypted/"+encrypt_name, "wb")
-    recipient_key_file = input("Input name of file containing encryption key: ")
+    print("Enter name of the file you want to encrypt: ")
+    try:
+        encrypt_file = input("> ")
+        encrypt_file_2 = (open(encrypt_file,"rb").read())
+        encrypt_name = encrypt_file+".bin"
+        encrypt_out = open("Encrypted/"+encrypt_name, "wb")
+        print("Input name of file containing encryption key: ")
+        recipient_key_file = input("> ")
 
-    recipient_key = (RSA.import_key(open(recipient_key_file).read()))
-    #recipient_key = bytes(recipient_key, "latin-1")
-    session_key = get_random_bytes(16)
+        recipient_key = (RSA.import_key(open("Public Keys/"+recipient_key_file).read()))
+        session_key = get_random_bytes(16)
 
-    cipher_rsa = PKCS1_OAEP.new(recipient_key)
-    encrypt_out.write(cipher_rsa.encrypt(session_key))
+        cipher_rsa = PKCS1_OAEP.new(recipient_key)
+        encrypt_out.write(cipher_rsa.encrypt(session_key))
 
-    cipher_aes = AES.new(session_key, AES.MODE_EAX)
-    ciphertext, tag = cipher_aes.encrypt_and_digest(encrypt_file_2) 
-    [ encrypt_out.write(x) for x in (cipher_aes.nonce, tag, ciphertext) ]
-    print(encrypt_file_2)
-    #encrypt_file2.close
-    encrypt_out.close
-    #recipient_key_file.close
-    #menu()
+        cipher_aes = AES.new(session_key, AES.MODE_EAX)
+        ciphertext, tag = cipher_aes.encrypt_and_digest(encrypt_file_2) 
+        [ encrypt_out.write(x) for x in (cipher_aes.nonce, tag, ciphertext) ]
+        getpass.getpass("Press enter to continue...")
+        encrypt_out.close
+    except FileNotFoundError:
+        print("Seems like you entered a nonexistant file.")
+        getpass.getpass("Press enter to return to main menu...")
+        menu()
 
 def decrypt_file():
     os.system("cls" if os.name == "nt" else "clear")
@@ -247,25 +373,35 @@ def decrypt_file():
     print(title__.renderText(_name))
     print("Decrypt file")
     print("")
-    decrypt_name = input("Enter name of file you want to decrypt: ")
-    decrypt_in = open("Encrypted/"+decrypt_name,"rb")
-    privatekey = RSA.import_key(my_private,passphrase=secret_code)
-    decrypt_out_name = decrypt_name.replace(".bin","")
-    print(decrypt_out_name)
+    print("Enter name of file you want to decrypt.")
+    try:
+        decrypt_name = input("> ")
+        decrypt_in = open("Encrypted/"+decrypt_name,"rb")
+        privatekey = RSA.import_key(my_private,passphrase=secret_code)
+        decrypt_out_name = decrypt_name.replace(".bin","")
+        print(decrypt_out_name)
 
-    enc_session_key, nonce, tag, ciphertext = \
-        [ decrypt_in.read(x) for x in (privatekey.size_in_bytes(), 16, 16, -1) ]
+        enc_session_key, nonce, tag, ciphertext = \
+            [ decrypt_in.read(x) for x in (privatekey.size_in_bytes(), 16, 16, -1) ]
 
-    cipher_rsa = PKCS1_OAEP.new(privatekey)
-    session_key = cipher_rsa.decrypt(enc_session_key)
+        cipher_rsa = PKCS1_OAEP.new(privatekey)
+        session_key = cipher_rsa.decrypt(enc_session_key)
 
-    cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce)
-    data = cipher_aes.decrypt_and_verify(ciphertext, tag)
-    decrypt_save = open("Decrypted/"+decrypt_out_name,"wb")
-    decrypt_save.write(data)
-    decrypt_save.close()
-    time.sleep(10)
-    #menu()
+        cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce)
+        data = cipher_aes.decrypt_and_verify(ciphertext, tag)
+        decrypt_save = open("Decrypted/"+decrypt_out_name,"wb")
+        decrypt_save.write(data)
+        decrypt_save.close()
+        time.sleep(10)
+        #menu()
+    except PermissionError:
+        print("It seems like you entered something invalid.")
+        getpass.getpass("Press enter to return to main menu...")
+        menu()
+    except FileNotFoundError:
+        print("It seems like you entered a file that doesn't exist.")
+        getpass.getpass("Press enter to return to main menu...")
+        menu()
 
 os.system("cls" if os.name == "nt" else "clear")
 title__ = Figlet(font="slant")
