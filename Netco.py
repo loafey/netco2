@@ -21,8 +21,20 @@ except ModuleNotFoundError:
     print("Library missing! Please run pip install -r requirements.txt")
     exit()
 
-_version = "0.4"
-_name = "Netco"
+
+def Config():
+    if os.path.isdir("Config") == False:
+        os.mkdir("Config")
+    if os.path.isfile("Config/Title.cfg") == False:
+        title_file = open("Config/Title.cfg","w")
+        title_file.write("Netco")
+        title_file.close()
+    if os.path.isfile("Config/Version.cfg") == False:
+        _version = "0.4"
+        version_file = open("Config/Version.cfg","w")
+        version_file.write(_version)
+
+
 
 def md5hash(file):
     hasher = hashlib.md5()
@@ -403,7 +415,12 @@ def decrypt_file():
         getpass.getpass("Press enter to return to main menu...")
         menu()
 
+
 os.system("cls" if os.name == "nt" else "clear")
 title__ = Figlet(font="slant")
+
+_version = "0.4"
+_name = "NETCO"
+
 attempt = 0
 start_menu()
