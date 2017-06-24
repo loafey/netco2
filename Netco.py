@@ -419,7 +419,7 @@ def decrypt_file():
 os.system("cls" if os.name == "nt" else "clear")
 title__ = Figlet(font="slant")
 
-_version = "0.4"
+_version = "0.5"
 _name = "NETCO"
 
 attempt = 0
