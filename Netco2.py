@@ -310,7 +310,7 @@ def decrypt_file():
 
 
 
-_version = "0.5"
+_version = "0.6"
 _name = "Netco"
 _title_font = "slant"
 attempt = 0
