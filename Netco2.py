@@ -1,77 +1,29 @@
 try:
     import getpass
-    import hashlib
-    import io
     import os.path
     import secrets
     import string
     import sys
     import time
-    from io import BufferedReader
-    from random import choice
-    from socket import *
-    from threading import Thread
 
-    import clipboard
+    import hashsums
+    import menuMaker as mM
+    import checker
+    import createPassword
+
     from Crypto.Cipher import AES, PKCS1_OAEP
     from Crypto.PublicKey import RSA
     from Crypto.Random import get_random_bytes
-    from pyfiglet import Figlet
+
 except ModuleNotFoundError:
     print("Library missing! Please run pip install -r requirements.txt")
     exit()
-
-
-def Config():
-    if os.path.isdir("Config") == False:
-        os.mkdir("Config")
-    if os.path.isfile("Config/Title.cfg") == False:
-        title_file = open("Config/Title.cfg","w")
-        title_file.write("Netco")
-        title_file.close()
-    if os.path.isfile("Config/Version.cfg") == False:
-        _version = "0.4"
-        version_file = open("Config/Version.cfg","w")
-        version_file.write(_version)
-
-
-
-def md5hash(file):
-    hasher = hashlib.md5()
-    with open(file, "rb") as afile:
-        buf = afile.read()
-        hasher.update(buf)
-    return hasher.hexdigest()
-
-def sha1hash(file):
-    hasher = hashlib.sha1()
-    with open(file, "rb") as afile:
-        buf = afile.read()
-        hasher.update(buf)
-    return hasher.hexdigest()
-
-def sha256hash(file):
-    hasher = hashlib.sha256()
-    with open(file, "rb") as afile:
-        buf = afile.read()
-        hasher.update(buf)
-    return hasher.hexdigest()
-
-def sha512hash(file):
-    hasher = hashlib.sha512()
-    with open(file, "rb") as afile:
-        buf = afile.read()
-        hasher.update(buf)
-    return hasher.hexdigest()
 
 def message():
     if os.path.isfile("Encrypted/message.txt"):
         os.remove("Encrypted/message.txt")
 
-    os.system("cls" if os.name == "nt" else "clear")
-    print(title__.renderText(_name))
-    print("Encrypt text")
-    print("")
+    mM.draw_Title_and_Undertext(_name,"Encrypt Text",_title_font)
     print("""Type the message you want to encrypt. Type --Done-- to be finished. You can't reverse writen lines!""")
     encrypt_out = "message"#input("Enter name of the encrypted text file: ")
     encrypt_out_file = open("Encrypted/message.txt","a")
@@ -98,66 +50,32 @@ def message():
             os.remove("Encrypted/message.txt")
             break
 
-def about():
-    os.system("cls" if os.name == "nt" else "clear")
-    print(title__.renderText(_name))
-    print("About")
-    print("")
-    print("Name: "+ _name)
-    time.sleep(2)
-    print("Version: "+_version)
-    time.sleep(2)
-    print("Creator: Samhamnam")
-    time.sleep(2)
-    getpass.getpass("Press enter to continue...")
-    start_menu()
 
-def generate_password():
-    os.system("cls" if os.name == "nt" else "clear")
-    print(title__.renderText(_name))
-    print("Generate a password")
-    print("")
-    print("Please choose a password length.")
-    plength = (input("> "))
-    alphabet = string.ascii_letters+string.digits+string.punctuation
-    if check_float(plength) == True:
-        try:
-            plength = int(plength)
-            password = str("".join(choice(alphabet) for x in range(plength)))
-            print("")
-            print(password)
-            print("")
-            print("Do you want to copy the password to the clipboard(y)?: ")
-            copy_quest = input("> ")
-            if copy_quest == "y":
-                clipboard.copy(password)
-            else:
-                start_menu()
-        except MemoryError:
-            print("Whoops seems it ran out of memory. Please try a smaller size.")
-            getpass.getpass("Press enter to continue...")
+
+
 def start_menu():
-    os.system("cls" if os.name == "nt" else "clear")
-    print(title__.renderText(_name))
-    print("Welcome to "+_name+"(Version: "+_version+")")
-    print("")
-    print("Type the corresponding number to do the corresponding action.")
-    print("1. Login")
-    print(" 2. New key")
-    print("  3. What is this software?")
-    print("   4. Generate a password")
-    print("    5. Exit")
+    mM.draw_Title_and_Undertext(_name,"Welcome to "+_name+"(Version: "+_version+")",_title_font)
+    mM.Make_Tilt_Right("Login","New key","What is this software?","Generate a password","Exit")
     option = input("Select item: ")
-    if check_float(option) == True:
+    if checker.Float_(option) == True:
         if option == "1":
             print("-----------------------------------")
             login()
         if option == "2":
             newkey()
         if option == "3":
-            about()
+            mM.draw_Title_and_Undertext(_name,"About",_title_font)
+            mM.mlPrint("Name: "+_name,"Version: "+_version,"Creator: Samhamnam")
+            time.sleep(1)
+            getpass.getpass("Press enter to continue...")
+            start_menu()
         if option == "4":
-            generate_password()
+            mM.draw_Title_and_Undertext(_name,"Generate a password",_title_font)
+            print("Please choose a password length.")
+            plength = (input("> "))
+            if checker.Float_(plength) == True:
+                createPassword.createPassword(plength)
+                start_menu()
         if option == "5":
             quit()
         else:
@@ -173,10 +91,10 @@ def newkey():
         os.mkdir("Public Keys")
     print("")
     print("We will now generate a key!")
-    print("It is very important that you don't share your passphrase! For extra security your private key should also never be shared! In doing so may result in loss of privacy and personal information!")
+    print("It is very important that you don't share your Password! For extra security your private key should also never be shared! In doing so may result in loss of privacy and personal information!")
     time.sleep(1)
     global secret_code
-    print("Enter a usernam")
+    print("Enter a username")
     user_name = input("> ")
     print("Enter password")
     secret_code = getpass.getpass("> ")
@@ -200,28 +118,13 @@ def newkey():
         getpass.getpass("Press enter to return to main menu...")
         start_menu()
 
-def check_float(option):
-    try:
-        float(option)
-        return True
-    except ValueError:
-        return(False)
+
 
 def menu():
-    os.system("cls" if os.name == "nt" else "clear")
-    print(title__.renderText(_name))
-    print("Main menu")
-    print("")
-    print("Type the corresponding number to do the corresponding action.")
-    print("1. Encrypt file")
-    print(" 2. Decrypt file")
-    print("  3. Encrypt text")
-    print("   4. View publickey")
-    print("    5. View privatekey")
-    print("     6. Delete key and exit")
-    print("      7. Exit")
+    mM.draw_Title_and_Undertext(_name,"Main Menu",_title_font)
+    mM.Make_Tilt_Right("Encrypt file","Decrypt file","Encrypt text","View publickey","View privatekey","Delete key and exit","Exit")
     option = input("Select item: ")
-    if check_float(option) == True:
+    if checker.Float_(option) == True:
         if option == "1":
             encrypt_file()
 
@@ -232,33 +135,32 @@ def menu():
             message()
 
         if option == "4":
-            os.system("cls" if os.name == "nt" else "clear")
-            print(title__.renderText(_name))
-            print("Public key:")
-            print("")
+            mM.draw_Title_and_Undertext(_name,"Public key:",_title_font)
             print(str(pkey,"latin-1"))
             print("")
-            print("md5: "+md5hash("Public Keys/"+user_name+".public"))
-            print("sha1: "+sha1hash("Public Keys/"+user_name+".public"))
-            print("sha256: "+sha256hash("Public Keys/"+user_name+".public"))
-            print("sha512: "+sha512hash("Public Keys/"+user_name+".public"))
+            print("md5: "+hashsums.md5("Public Keys/"+user_name+".public"))
+            print("sha1: "+hashsums.sha1("Public Keys/"+user_name+".public"))
+            print("sha224: "+hashsums.sha224("Public Keys/"+user_name+".public"))
+            print("sha256: "+hashsums.sha256("Public Keys/"+user_name+".public"))
+            print("sha384: "+hashsums.sha384("Public Keys/"+user_name+".public"))
+            print("sha512: "+hashsums.sha512("Public Keys/"+user_name+".public"))
             print("")
             getpass.getpass("Press enter to continue...")
             menu()
 
         if option == "5":
-            os.system("cls" if os.name == "nt" else "clear")
-            print(title__.renderText(_name))
-            print("Private key")
+            mM.draw_Title_and_Undertext(_name,"Private Key:",_title_font)
             secret_code2=getpass.getpass("Password: ")
             print("")
             if secret_code2 == secret_code:
                 print(str(my_private,"latin-1"))
                 print("")
-                print("md5: "+md5hash("Keys/"+user_name))
-                print("sha1: "+sha1hash("Keys/"+user_name))
-                print("sha256: "+sha256hash("Keys/"+user_name))
-                print("sha512: "+sha512hash("Keys/"+user_name))
+                print("md5: "+hashsums.md5("Keys/"+user_name))
+                print("sha1: "+hashsums.sha1("Keys/"+user_name))
+                print("sha224: "+hashsums.sha224("Keys/"+user_name))
+                print("sha256: "+hashsums.sha256("Keys/"+user_name))
+                print("sha384: "+hashsums.sha384("Keys/"+user_name))
+                print("sha512: "+hashsums.sha512("Keys/"+user_name))
                 print("")
                 getpass.getpass("Press enter to continue...")
                 menu()
@@ -268,10 +170,7 @@ def menu():
                 menu()
 
         if option == "6":
-            os.system("cls" if os.name == "nt" else "clear")
-            print(title__.renderText(_name))
-            print("Delete private key and exit")
-            print("")
+            mM.draw_Title_and_Undertext(_name,"Delete private key and exit.",_title_font)
             del_ = input("Are you sure?(y): ")
             if del_ == "y":
                 let = getpass.getpass("Enter password: ")
@@ -316,7 +215,7 @@ def login():
             user_name = input("> ")
             print("Enter password.")
             secret_code = getpass.getpass("> ")
-            #secret_code = input("Enter passphrase: ")
+            #secret_code = input("Enter Password: ")
             try:
                 encoded_key = open("Keys/"+user_name, "rb").read()
             except:
@@ -347,12 +246,9 @@ def login():
 
 
 def encrypt_file():
-    os.system("cls" if os.name == "nt" else "clear")
     if os.path.isdir("Encrypted") == False:
         os.mkdir("Encrypted")
-    print(title__.renderText(_name))
-    print("Encrypt file")
-    print("")
+    mM.draw_Title_and_Undertext(_name,"Encrypt File",_title_font)
     print("Enter name of the file you want to encrypt: ")
     try:
         encrypt_file = input("> ")
@@ -379,12 +275,9 @@ def encrypt_file():
         menu()
 
 def decrypt_file():
-    os.system("cls" if os.name == "nt" else "clear")
     if os.path.isdir("Decrypted") == False:
         os.mkdir("Decrypted")
-    print(title__.renderText(_name))
-    print("Decrypt file")
-    print("")
+    mM.draw_Title_and_Undertext(_name,"Decrypt File",_title_font)
     print("Enter name of file you want to decrypt.")
     try:
         decrypt_name = input("> ")
@@ -416,11 +309,9 @@ def decrypt_file():
         menu()
 
 
-os.system("cls" if os.name == "nt" else "clear")
-title__ = Figlet(font="slant")
 
 _version = "0.5"
-_name = "NETCO"
-
+_name = "Netco"
+_title_font = "slant"
 attempt = 0
 start_menu()
