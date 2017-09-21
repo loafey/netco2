@@ -1,7 +1,13 @@
+"""
+Pylint stuff
+"""
 # pylint: disable=W0106
 # pylint: disable=W0601
 # pylint: disable=W0621
 # pylint: disable=W0702
+# pylint: disable=C0103
+# pylint: disable=R0912
+# pylint: disable=R0915
 
 try:
     import getpass
@@ -23,6 +29,9 @@ except ModuleNotFoundError:
 
 
 def message():
+    """
+    Allows the user to encrypt some text
+    """
     if os.path.isfile("Encrypted/message.txt"):
         os.remove("Encrypted/message.txt")
 
@@ -58,6 +67,9 @@ def message():
 
 
 def start_menu():
+    """
+    Displays the start menu
+    """
     mM.draw_Title_and_Undertext(
         _name, "Welcome to " + _name + "Version: " + _version, _title_font)
     mM.Make_Tilt_Right(
@@ -93,6 +105,9 @@ def start_menu():
 
 
 def newkey():
+    """
+    Generates a new key for the user
+    """
     if os.path.isdir("Keys") is False:
         os.mkdir("Keys")
     if os.path.isdir("Public Keys") is False:
@@ -132,6 +147,9 @@ def newkey():
 
 
 def menu():
+    """
+    Displays the main menu
+    """
     mM.draw_Title_and_Undertext(_name, "Main Menu", _title_font)
     mM.Make_Tilt_Right(
         "Encrypt file",
@@ -235,6 +253,7 @@ def login():
             if not files:
                 print("Seems you have no keys")
                 newkey()
+                break
         else:
             global secret_code
             global pkey
