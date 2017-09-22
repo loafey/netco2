@@ -1,9 +1,18 @@
-import secrets
+# pylint: disable= W0612, C0103
+"""
+Randomly generates a password
+"""
+import getpass
 import string
 from random import choice
 import clipboard
 
+
 def createPassword(plength):
+    """
+    Randomly generates a password.
+    Gives the option to copy it to the clipboard.
+    """
     try:
         alphabet = string.ascii_letters+string.digits+string.punctuation
         plength = int(plength)
@@ -18,4 +27,3 @@ def createPassword(plength):
     except MemoryError:
         print("Whoops seems it ran out of memory. Please try a smaller size.")
         getpass.getpass("Press enter to continue...")
-    
