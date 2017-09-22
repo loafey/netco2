@@ -1,6 +1,7 @@
 """
 Pylint stuff
 """
+# pylint: disable=I0011
 # pylint: disable=W0106
 # pylint: disable=W0601
 # pylint: disable=W0621
