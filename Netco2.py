@@ -1,14 +1,7 @@
 """
 Pylint stuff
 """
-# pylint: disable=I0011
-# pylint: disable=W0106
-# pylint: disable=W0601
-# pylint: disable=W0621
-# pylint: disable=W0702
-# pylint: disable=C0103
-# pylint: disable=R0912
-# pylint: disable=R0915
+# pylint: disable=I0011, W0106, W0601, W0621, W0702, C0103, R0912, R0915
 
 try:
     import getpass

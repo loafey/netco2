@@ -1,4 +1,4 @@
-# pylint: disable= W0612, C0103
+# pylint: disable= I0011, W0612, C0103
 """
 Randomly generates a password
 """
