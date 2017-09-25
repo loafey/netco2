@@ -357,7 +357,7 @@ def decrypt_file():
         menu()
 
 
-_version = "0.6"
+_version = "0.7 "
 _name = "Netco"
 _title_font = "slant"
 start_menu()
