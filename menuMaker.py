@@ -1,7 +1,6 @@
 """
 A module useful for creating terminal a menu
 """
-# pylint: disable = I0011, C0103, C0200
 import os
 from pyfiglet import Figlet
 

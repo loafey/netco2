@@ -1,0 +1,8 @@
+*
+!.gitignore
+!Netco2.py
+!hashsums.py
+!title.py
+!menuMaker.py
+!createPassword.py
+!requirements.txt

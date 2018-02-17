@@ -1,7 +1,6 @@
 """
 Pylint stuff
 """
-# pylint: disable=I0011, W0106, W0601, W0621, W0702, C0103, R0912, R0915
 
 try:
     import getpass

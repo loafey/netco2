@@ -1,7 +1,6 @@
 """
 A module used to check variables
 """
-# pylint: disable=I0011, C0103
 
 
 def Float_(option):
