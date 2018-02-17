@@ -134,7 +134,7 @@ def newkey():
         print("Key generated...")
         time.sleep(3)
         start_menu()
-    except:
+    except ImportError:
         print("Something went wrong!")
         getpass.getpass("Press enter to return to main menu...")
         start_menu()
@@ -259,7 +259,7 @@ def login():
             # secret_code = input("Enter Password: ")
             try:
                 encoded_key = open("Keys/"+user_name, "rb").read()
-            except:
+            except FileNotFoundError:
                 print("User doesn't exist probably!")
                 time.sleep(0.3)
                 print("")
